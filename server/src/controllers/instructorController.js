@@ -12,7 +12,8 @@ const searchSchema = Joi.object({
   username: Joi.string().trim().min(1).max(50),
   department: Joi.string().trim().min(1).max(80),
   role: Joi.string().valid('instructor', 'superadmin')
-}).min(1).unknown(false);
+}).unknown(false);
+
 
 function publicProfile(doc) {
   return {
@@ -73,9 +74,21 @@ export async function getDirectory(req, res, next) {
 }
 
 // GET /api/instructors/search
+// GET /api/instructors/search
 export async function searchInstructors(req, res, next) {
   try {
-    const { value, error } = searchSchema.validate(req.query);
+    // Only accept known fields containing plain strings.
+    // Ignore objects and unknown parameters.
+    const allowedFields = ['name', 'username', 'department', 'role'];
+    const input = {};
+
+    for (const field of allowedFields) {
+      if (typeof req.query[field] === 'string') {
+        input[field] = req.query[field];
+      }
+    }
+
+    const { value, error } = searchSchema.validate(input);
 
     if (error) {
       return res.status(400).json({ message: 'Invalid search parameters' });
@@ -97,7 +110,7 @@ export async function searchInstructors(req, res, next) {
       .sort({ name: 1 })
       .lean();
 
-    res.json({
+    return res.status(200).json({
       count: instructors.length,
       instructors
     });
