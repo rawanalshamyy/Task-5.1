@@ -11,7 +11,7 @@ const instructorSchema = new mongoose.Schema(
     name: { type: String, required: true },
     username: { type: String, required: true, unique: true, trim: true },
     // ⚠️ VULNERABLE (lab): plaintext password, no bcrypt hashing.
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false },
     department: { type: String },
     role: { type: String, default: 'instructor' }, // 'instructor' | 'superadmin'
 
